@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 
-const AI_SERVICE_URL = "https://law-project-aicw-ai-service.onrender.com";
+const AI_SERVICE_URL = "https://law-project-aicw-ai-service.onrender.com/predict";
 const AI_SERVICE_HEALTH_URL = "https://law-project-aicw-ai-service.onrender.com";
 const RETRYABLE_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504]);
 const AI_HEALTH_TIMEOUT_MS = 10000;
@@ -68,24 +68,35 @@ async function ensureAiServiceReady({ force = false } = {}) {
   return aiWarmupPromise;
 }
 
+
 async function requestAiAnalysis(question) {
   let lastError;
+  const analysisTimeout = 20 * 1000; // 20 seconds
 
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
       await ensureAiServiceReady({ force: attempt > 0 });
 
-      const response = await axios.post(
-        AI_SERVICE_URL,
-        { text: question },
-        { timeout: AI_REQUEST_TIMEOUT_MS }
-      );
+      // Promise.race to enforce timeout
+      const response = await Promise.race([
+        axios.post(
+          AI_SERVICE_URL,
+          { text: question },
+          { timeout: AI_REQUEST_TIMEOUT_MS }
+        ),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("AI analysis timed out")), analysisTimeout))
+      ]);
 
       aiLastReadyAt = Date.now();
 
       return response.data;
     } catch (error) {
       lastError = error;
+
+      // If timeout, break and return error
+      if (error.message === "AI analysis timed out") {
+        break;
+      }
 
       const isRetryable = isRetryableAiError(error);
 
@@ -96,6 +107,11 @@ async function requestAiAnalysis(question) {
       aiLastReadyAt = 0;
       await delay(1200);
     }
+  }
+
+  // If timeout, return special error
+  if (lastError && lastError.message === "AI analysis timed out") {
+    return { error: "AI analysis is taking too long. Please try again in a couple of minutes." };
   }
 
   throw lastError;
@@ -130,7 +146,9 @@ router.post("/query", async (req, res) => {
     }
 
     const aiResponse = await requestAiAnalysis(question.trim());
-
+    if (aiResponse && aiResponse.error) {
+      return res.status(504).json({ error: aiResponse.error });
+    }
     res.json(aiResponse);
   } catch (error) {
     const status = error.response?.status;
