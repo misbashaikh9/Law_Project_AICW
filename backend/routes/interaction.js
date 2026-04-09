@@ -24,6 +24,13 @@ router.put("/update-interaction/:id", async (req, res) => {
     if (req.body.selectedLawyer) {
       update.selectedLawyer = req.body.selectedLawyer;
     }
+    if (req.body.review) {
+      const { rating, feedback } = req.body.review;
+      if (typeof rating !== "number" || rating < 1 || rating > 5) {
+        return res.status(400).json({ error: "Rating must be a number between 1 and 5" });
+      }
+      update.review = { rating, feedback };
+    }
     const interaction = await Interaction.findByIdAndUpdate(
       req.params.id,
       { $set: update },

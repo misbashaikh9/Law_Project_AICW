@@ -10,6 +10,18 @@ const InteractionSchema = new mongoose.Schema({
     name: String,
     contact: String,
   },
+  review: {
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5,
+    default: null
+  },
+  feedback: {
+    type: String,
+    default: ""
+  }
+},
   createdAt: { type: Date, default: Date.now },
 });
 
