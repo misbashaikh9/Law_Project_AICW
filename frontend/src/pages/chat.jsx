@@ -135,7 +135,8 @@ export default function Chat() {
       setSelectedLawyer(null);
       // Save interaction to backend and set interactionId
       try {
-        const userId = localStorage.getItem("userId");
+        const user = JSON.parse(localStorage.getItem("user"));
+        const userId = user?._id;
         const saveRes = await API.post(
           import.meta.env.VITE_REACT_APP_BACKEND_URL + "/api/save-interaction",
           {
