@@ -8,10 +8,24 @@ from pathlib import Path
 import httpx
 from dotenv import load_dotenv
 import logging
+# here is the minor cases data
+import csv
 
+minor_cases = []
+
+try:
+    with open("minor_cases.csv", newline='', encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        minor_cases = list(reader)
+except Exception as e:
+    print("Error loading minor_cases.csv:", e)
+# end of minor cases data
 # Load lawyer data at startup
 try:
     lawyers = joblib.load("lawyers.pkl")
+    print("Total lawyers loaded:", len(lawyers))
+    print("Sample lawyer:", lawyers[0] if lawyers else "EMPTY")
+
 except Exception as e:
     print(f"Could not load lawyers.pkl: {e}")
     lawyers = []
@@ -67,21 +81,29 @@ def recommend_lawyers(category, severity, top_n=3):
                 rating = float(l.get("rating", 0))
                 experience = int(l.get("experience", 0))
                 cases = int(l.get("cases", 0))
+                lost = int(l.get("lost_cases", 0))
+                solved = cases - lost
             except:
-                rating, experience, cases = 0, 0, 0
+                rating, experience, cases, lost, solved = 0, 0, 0, 0, 0
 
-            # 🔥 scoring formula
-            score = (rating * 2) + experience + (cases * 0.1)
+            # 🔥 improved score
+            score = (
+                (rating * 3) +
+                (experience * 1.5) +
+                (solved * 0.2) -
+                (lost * 0.1)
+            )
 
-            # boost serious cases
+            # 🚨 serious boost
             if severity == "serious":
-                score += 5
+                score += 10
 
             ranked.append((score, l))
 
     ranked.sort(key=lambda x: x[0], reverse=True)
 
     return [l for _, l in ranked[:top_n]]
+
 
 # ── Groq API call ──────────────────────────────────────────────────────────────
 
@@ -318,7 +340,11 @@ async def predict(data: InputText):
             legal_info = await call_groq(prompt)
             logger.info("Groq legal info generated.")
         else:
-            legal_info = f"This is a minor issue under {category}. It does not involve serious legal consequences but basic rights still apply."
+            # 🧠 MINOR → CSV LOGIC ONLY (NO GROQ)
+            solution = get_minor_solution(data.text)
+
+            legal_info = ""   # same
+            
 
         # Step 3 — Recommend lawyers ONLY if serious
         lawyer_recommendations = []
@@ -345,3 +371,67 @@ async def predict(data: InputText):
     except Exception as e:
         logger.error(f"Unhandled error: {e}")
         return {"error": str(e)}
+# minor
+# ── Minor Case Solution (Hardcoded CSV Logic - NO Groq) ─────────────────────
+def get_minor_solution(text: str) -> str:
+    text = text.lower().strip()
+    
+    for case in minor_cases:
+        keyword_field = case.get("keyword", "").lower().strip()
+        
+        # ✅ Split multiple keywords
+        keywords = [k.strip() for k in keyword_field.split("|") if k.strip()]
+        
+        # ✅ Check if ANY keyword matches
+        if any(kw in text for kw in keywords):
+
+            
+            laws = case.get("relevant_laws", "")
+            laws_list = [law.strip() for law in laws.split("|") if law.strip()]
+            
+            return f"""CASE UNDERSTANDING
+This appears to be related to:
+● {case.get("case_understanding", "a minor legal issue")}
+
+RELEVANT INDIAN LAWS
+{chr(10).join("● " + law for law in laws_list) if laws_list else "● Consumer Protection Act 2019"}
+
+IMPORTANT RULE YOU SHOULD KNOW
+{case.get("important_rule", "Always keep proof of purchase and communication.")}
+
+WHAT IS ILLEGAL IN THIS SITUATION
+● {case.get("what_is_illegal", "Not following through on your rights as a consumer.")}
+
+WHAT YOU SHOULD DO
+Step 1: {case.get("step1_title", "Contact the seller")}
+{case.get("step1_desc", "")}
+
+Step 2: {case.get("step2_title", "Escalate to platform")}
+{case.get("step2_desc", "")}
+
+Step 3: {case.get("step3_title", "File a complaint")}
+{case.get("step3_desc", "")}
+
+Step 4: {case.get("step4_title", "Approach consumer court")}
+{case.get("step4_desc", "")}
+
+WHEN IS THIS SERIOUS
+Your case becomes serious if:
+● {case.get("when_serious", "Amount is very high")}
+
+IF THE MATTER IS SERIOUS
+● {case.get("if_serious", "Contact a lawyer immediately")}
+"""
+    
+    # ✅ Better fallback (slightly improved)
+    return """
+    ---this category is not covered in the minor cases data---
+    --please add this category to the minor_cases.csv file--
+    CASE UNDERSTANDING
+This appears to be related to:
+● a minor consumer / general issue
+IMPORTANT RULE YOU SHOULD KNOW
+Keep all proofs (screenshots, order ID, messages).
+
+
+"""
