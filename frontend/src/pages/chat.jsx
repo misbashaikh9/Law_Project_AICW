@@ -67,6 +67,8 @@ export default function Chat() {
   const [showLawyerPrompt, setShowLawyerPrompt] = useState(false);
   const [lawyerChoices, setLawyerChoices] = useState([]);
   const [selectedLawyer, setSelectedLawyer] = useState(null);
+  // Add interactionId to state
+  const [interactionId, setInteractionId] = useState(null);
   const warmupPromiseRef = useRef(null);
   const bottomRef        = useRef(null);
   const [abortController, setAbortController] = useState(null);
@@ -131,6 +133,29 @@ export default function Chat() {
       setShowLawyerPrompt(lawyers && lawyers.length > 0);
       setLawyerChoices(lawyers || []);
       setSelectedLawyer(null);
+      // Save interaction to backend and set interactionId
+      try {
+        const userId = localStorage.getItem("userId");
+        const saveRes = await API.post(
+          process.env.REACT_APP_BACKEND_URL + "/api/save-interaction",
+          {
+            userId,
+            question,
+            solution,
+            legal_info,
+            lawyers,
+            email_needed,
+          }
+        );
+        if (saveRes.data && saveRes.data.interactionId) {
+          setInteractionId(saveRes.data.interactionId);
+        } else {
+          setInteractionId(null);
+        }
+      } catch (e) {
+        setInteractionId(null);
+        console.error("Failed to save interaction:", e);
+      }
     } catch (err) {
       if (err.name === "CanceledError" || err.name === "AbortError") {
         setMessages((prev) => [...prev, { type: "ai", text: "Analysis stopped by user." }]);
@@ -228,8 +253,7 @@ export default function Chat() {
                 </p>
               </div>
             )}
-
-
+            
             {messages.map((msg, index) => (
               <div key={`${msg.type}-${index}`}
                 className={`chat-message chat-message--${msg.type}`}>
@@ -348,7 +372,7 @@ export default function Chat() {
                               {/* FeedbackSection: only show if interactionId exists */}
                               {interactionId && (
                                 <div className="mt-4">
-                                  <FeedbackSection interactionId={interactionId} backendUrl={process.env.REACT_APP_BACKEND_URL || "http://localhost:5000"} />
+                                  <FeedbackSection interactionId={interactionId} backendUrl={process.env.REACT_APP_BACKEND_URL} />
                                 </div>
                               )}
                             </div>
@@ -381,7 +405,7 @@ export default function Chat() {
                         If you don’t receive a response, you may consider legal action or consulting a lawyer.
                       </div>
                       {/* FeedbackSection: pass interactionId and backendUrl as props */}
-                      <FeedbackSection interactionId={interactionId} backendUrl={process.env.REACT_APP_BACKEND_URL || "http://localhost:5000"} />
+                      <FeedbackSection interactionId={interactionId} backendUrl={process.env.REACT_APP_BACKEND_URL} />
                     </div>
                   ) : (
                     <p className="chat-message__text">{msg.text}</p>
