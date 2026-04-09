@@ -5,6 +5,7 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/auth");
 const aiRoutes = require("./routes/ai");
+const interactionRoutes = require("./routes/interaction");
 
 const app = express();
 
@@ -18,6 +19,7 @@ connectDB();
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
+app.use("/api", interactionRoutes);
 
 // Test route
 app.get("/", (req, res) => {
