@@ -6,10 +6,12 @@ const services = [
         <path d="M9 12l2 2 4-4" />
       </svg>
     ),
-    title: "Fake Article Detection",
-    description:
-      "Our ML-powered engine scans and verifies legal articles, court orders, and case documents to detect fabricated or tampered content with high accuracy.",
-    tag: "AI / ML",
+    
+  title: "Legal Guidance System",
+  description:
+    "Get step-by-step legal guidance based on your case type. The system explains your rights, relevant laws, and next actions in simple language.",
+  tag: "AI Assistant",
+
   },
   {
     icon: (
@@ -49,7 +51,7 @@ const services = [
     ),
     title: "Document Generation",
     description:
-      "Instantly create rent agreements, affidavits, legal notices, and compliance documents from pre-approved templates — ready for review and signature.",
+      "Instantly create email for rent agreements, affidavits, legal notices, and compliance documents — ready for review and signature.",
     tag: "Automation",
   },
   {

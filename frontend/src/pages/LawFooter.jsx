@@ -5,12 +5,12 @@ const LawFooter = () => {
     <footer className="bg-charcoal relative overflow-hidden">
       {/* Top CTA */}
       <div className="border-b border-white/[0.08]">
-        <div className="max-w-7xl mx-auto px-8 lg:px-12 py-20 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="max-w-7xl mx-auto px-8 lg:px-12 py-16 flex flex-col md:flex-row items-center justify-between gap-8">
           <div>
             <h3 className="text-3xl md:text-4xl font-bold text-white mb-2">
               Ready to Get Started?
             </h3>
-            <p className="text-white/40 text-[15px] max-w-md">
+            <p className="text-white/100 text-[15px] max-w-md">
               Schedule your free consultation and navigate your legal matters with confidence.
             </p>
           </div>
@@ -24,7 +24,7 @@ const LawFooter = () => {
       </div>
 
       {/* Main footer */}
-      <div className="max-w-7xl mx-auto px-8 lg:px-12 py-16">
+      <div className="max-w-7xl mx-auto px-8 lg:px-12 py-12">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div>
@@ -48,8 +48,12 @@ const LawFooter = () => {
                 { label: "Contact", href: "#contact" },
               ].map((link) => (
                 <li key={link.label}>
-                  <a href={link.href} className="text-white/40 text-sm hover:text-[#E4574E] transition-colors duration-300">{link.label}</a>
-                </li>
+<a
+  href={link.href}
+  className="!text-white/70 text-sm hover:text-[#E4574E] transition-colors duration-300"
+>
+  {link.label}
+</a>                </li>
               ))}
             </ul>
           </div>
@@ -60,7 +64,7 @@ const LawFooter = () => {
             <ul className="space-y-3.5">
               {["Corporate Law", "Family Law", "Criminal Defense", "Property Law", "Labour Law", "Cyber Law"].map((area) => (
                 <li key={area}>
-                  <a href="#practice" className="text-white/40 text-sm hover:text-[#E4574E] transition-colors duration-300">{area}</a>
+                  <a href="#practice" className="!text-white/100 text-sm hover:text-[#E4574E] transition-colors duration-300">{area}</a>
                 </li>
               ))}
             </ul>
@@ -72,15 +76,15 @@ const LawFooter = () => {
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <span className="text-[#E4574E] text-sm mt-0.5">&#9679;</span>
-                <span className="text-white/40 text-sm">Mumbai, Maharashtra, India</span>
+                <span className="text-white/100 text-sm">Mumbai, Maharashtra, India</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#E4574E] text-sm mt-0.5">&#9679;</span>
-                <span className="text-white/40 text-sm">+91 98981 04059</span>
+                <span className="text-white/100 text-sm">+91 98981 04059</span>
               </li>
               <li className="flex items-start gap-3">
                 <span className="text-[#E4574E] text-sm mt-0.5">&#9679;</span>
-                <span className="text-white/40 text-sm">contact@lawbridge.ai</span>
+                <span className="text-white/100 text-sm">contact@lawbridge.ai</span>
               </li>
             </ul>
           </div>
@@ -89,14 +93,14 @@ const LawFooter = () => {
 
       {/* Bottom bar */}
       <div className="border-t border-white/[0.08]">
-        <div className="max-w-7xl mx-auto px-8 lg:px-12 py-6 flex flex-col md:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-8 lg:px-12 py-4 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-white/30 text-xs tracking-wide">
             &copy; 2026 LawBridge AI. All rights reserved.
           </p>
           <div className="flex gap-8">
-            <a href="#" className="text-white/30 text-xs hover:text-[#E4574E] transition-colors duration-300">Privacy Policy</a>
-            <a href="#" className="text-white/30 text-xs hover:text-[#E4574E] transition-colors duration-300">Terms of Service</a>
-            <a href="#" className="text-white/30 text-xs hover:text-[#E4574E] transition-colors duration-300">Disclaimer</a>
+            <a href="#" className="text-white/90 text-xs hover:text-[#E4574E] transition-colors duration-300">Privacy Policy</a>
+            <a href="#" className="text-white/90 text-xs hover:text-[#E4574E] transition-colors duration-300">Terms of Service</a>
+            <a href="#" className="text-white/90 text-xs hover:text-[#E4574E] transition-colors duration-300">Disclaimer</a>
           </div>
         </div>
       </div>
