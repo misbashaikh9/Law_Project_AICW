@@ -303,22 +303,49 @@ export default function Chat() {
                         </>
                       )}
                       {/* Show lawyer choices if user wants recommendation */}
-                      {index === messages.length - 1 && showLawyerPrompt === 'choose' && lawyerChoices.length > 0 && !selectedLawyer && (
+                      {index === messages.length - 1 && showLawyerPrompt === 'choose' && lawyerChoices.length > 0 && (
                         <div className="chat-lawyer-choices mt-6">
                           <p className="font-semibold text-lg mb-4">Select a lawyer:</p>
                           <div className="flex flex-col gap-4">
-                            {lawyerChoices.map((lawyer, i) => (
-                              <div
-                                key={i}
-                                className="rounded-lg border-2 border-[#E4574E] bg-white p-4 shadow hover:shadow-lg transition cursor-pointer"
-                                onClick={() => setSelectedLawyer(lawyer)}
-                              >
-                                <span className="text-[#E4574E] font-bold text-lg">{lawyer.name}</span>
-                                <div className="text-sm text-gray-600">{lawyer.specialization} • {lawyer.qualification}</div>
-                                <div className="text-xs text-gray-400 mt-1">⭐ {lawyer.rating} | {lawyer.experience} yrs exp | ₹{lawyer.fees} fees</div>
-                              </div>
-                            ))}
+                            {lawyerChoices.map((lawyer, i) => {
+                              const isSelected = selectedLawyer && selectedLawyer.name === lawyer.name && selectedLawyer.contact === lawyer.contact;
+                              return (
+                                <div
+                                  key={i}
+                                  className={
+                                    `rounded-lg border-2 bg-white p-4 shadow transition cursor-pointer transform hover:scale-[1.03] duration-150 ` +
+                                    (isSelected ? 'border-blue-600 ring-2 ring-blue-200' : 'border-[#E4574E] hover:border-blue-400')
+                                  }
+                                  onClick={() => setSelectedLawyer(lawyer)}
+                                >
+                                  <span className="text-[#E4574E] font-bold text-lg">{lawyer.name}</span>
+                                  <div className="text-sm text-gray-600">{lawyer.specialization || lawyer.category}</div>
+                                  <div className="text-xs text-gray-400 mt-1">{lawyer.contact}</div>
+                                  <button
+                                    className={`mt-3 px-3 py-1.5 rounded bg-blue-600 text-white text-sm font-medium shadow hover:bg-blue-700 transition ${isSelected ? 'ring-2 ring-blue-300' : ''}`}
+                                    onClick={e => { e.stopPropagation(); setSelectedLawyer(lawyer); }}
+                                    type="button"
+                                  >
+                                    {isSelected ? 'Selected' : 'Select Lawyer'}
+                                  </button>
+                                </div>
+                              );
+                            })}
                           </div>
+                          {/* Confirmation section */}
+                          {selectedLawyer && (
+                            <div className="mt-6 p-4 rounded-lg border border-blue-400 bg-blue-50 shadow-sm transition">
+                              <div className="font-semibold text-blue-700 mb-1">
+                                You selected {selectedLawyer.name}
+                              </div>
+                              <div className="text-sm text-gray-700 mb-1">
+                                Contact: <a href={`tel:${selectedLawyer.contact}`} className="text-blue-600 underline hover:text-blue-800">{selectedLawyer.contact}</a>
+                              </div>
+                              <div className="text-xs text-gray-600">
+                                You can now contact this lawyer for professional assistance.
+                              </div>
+                            </div>
+                          )}
                         </div>
                       )}
                       {/* Show selected lawyer details */}
