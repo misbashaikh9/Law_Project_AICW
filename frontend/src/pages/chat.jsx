@@ -253,10 +253,13 @@ export default function Chat() {
                       )}
                       {/* Action Buttons: Generate Email & Find Lawyer */}
                       {index === messages.length - 1 && (
-                        <div className="flex flex-row gap-3 mt-2">
+                        <>
+                          <div className="text-xs text-gray-500 mb-1 ml-0.5">Choose an action:</div>
+                          <div className="flex flex-row gap-2 mt-2">
                           {msg.email_needed && (
                             <button
-                              className="px-4 py-2 rounded bg-[#E4574E] text-white font-semibold shadow hover:bg-[#c13d36] transition"
+                              className="px-3 py-1.5 rounded-md bg-[#E4574E] text-white font-medium text-sm shadow-sm border border-[#e4574e] focus:outline-none focus:ring-2 focus:ring-[#e4574e]/40 focus:ring-offset-1 hover:bg-[#c13d36] active:bg-[#a32d28] transition-all duration-150"
+                              style={{ minWidth: 110 }}
                               disabled={emailLoading}
                               onClick={async () => {
                                 setEmailLoading(true);
@@ -277,18 +280,27 @@ export default function Chat() {
                                 }
                               }}
                             >
-                              {emailLoading ? "Generating Email..." : "Generate Email"}
+                              {emailLoading ? (
+                                <span className="flex items-center gap-1">
+                                  <svg className="animate-spin h-4 w-4 mr-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path></svg>
+                                  Generating...
+                                </span>
+                              ) : (
+                                <span>Generate Email</span>
+                              )}
                             </button>
                           )}
                           <button
-                            className="px-4 py-2 rounded border border-[#E4574E] text-[#E4574E] font-semibold bg-white shadow hover:bg-[#fbeaea] transition"
+                            className="px-3 py-1.5 rounded-md border border-[#E4574E] text-[#E4574E] font-medium text-sm bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-[#e4574e]/30 focus:ring-offset-1 hover:bg-[#fbeaea] active:bg-[#f7d6d3] transition-all duration-150"
+                            style={{ minWidth: 100 }}
                             onClick={() => {
                               setShowLawyerPrompt('choose');
                             }}
                           >
                             Find Lawyer
                           </button>
-                        </div>
+                          </div>
+                        </>
                       )}
                       {/* Show lawyer choices if user wants recommendation */}
                       {index === messages.length - 1 && showLawyerPrompt === 'choose' && lawyerChoices.length > 0 && !selectedLawyer && (
