@@ -1,0 +1,15 @@
+{
+  "short_name": "LawBridge",
+  "name": "LawBridge AI",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#E4574E",
+  "background_color": "#ffffff"
+}
