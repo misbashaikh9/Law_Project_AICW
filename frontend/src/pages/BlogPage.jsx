@@ -50,8 +50,8 @@ export const blogPosts = [
     author: "Adv. Priya Sharma",
     date: "Mar 12, 2026",
     readTime: "7 min read",
-    image:
-      "https://images.unsplash.com/photo-1591115765373-5f9cf1da241c?w=600&auto=format&fit=crop&q=80",
+      image:
+        "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?w=600&auto=format&fit=crop&q=80",
   },
   {
     id: 5,
@@ -245,7 +245,7 @@ const BlogPage = () => {
               >
                 <div className="relative overflow-hidden">
                   <img
-                    src={post.image}
+                    src={post.image && post.image.trim() !== "" ? post.image : "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&auto=format&fit=crop&q=80"}
                     alt={post.title}
                     className="w-full h-52 object-cover group-hover:scale-110 transition-transform duration-700"
                   />
