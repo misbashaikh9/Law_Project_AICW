@@ -58,6 +58,10 @@ export default function Chat() {
   const [messages, setMessages]  = useState([]);
   const [input,    setInput]     = useState("");
   const [loading,  setLoading]   = useState(false);
+  // New state for email and lawyer features
+  const [emailNeeded, setEmailNeeded] = useState(false);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailContent, setEmailContent] = useState(null);
   // Lawyer recommendation UI state
   const [showLawyerPrompt, setShowLawyerPrompt] = useState(false);
   const [lawyerChoices, setLawyerChoices] = useState([]);
@@ -72,6 +76,7 @@ export default function Chat() {
     setInput("");
   };
 
+  // Enhanced sendMessage for new API and state
   const sendMessage = async (presetQuestion) => {
     const question = (presetQuestion ?? input).trim();
     if (!question || loading) return;
@@ -85,26 +90,29 @@ export default function Chat() {
     setMessages((prev) => [...prev, { type: "user", text: question }]);
     setInput("");
     setLoading(true);
+    setEmailNeeded(false);
+    setEmailContent(null);
 
     // Create and set AbortController
     const controller = new AbortController();
     setAbortController(controller);
 
     try {
-      // Backend proxies to ai-service /predict (see backend/routes/ai.js)
+      // Directly call the AI service /predict endpoint
       const res = await API.post(
-        "/api/ai/query",
-        { question: question },
+        "https://law-project-aicw-ai-service.onrender.com/predict",
+        { text: question },
         { signal: controller.signal }
       );
 
-      const { category, severity, action, solution, legal_info, lawyers, error } = res.data;
+      const { solution, legal_info, lawyers, error, email_needed } = res.data;
 
       if (error) {
         setMessages((prev) => [...prev, { type: "ai", text: `Error: ${error}` }]);
         setShowLawyerPrompt(false);
         setLawyerChoices([]);
         setSelectedLawyer(null);
+        setEmailNeeded(false);
         return;
       }
 
@@ -114,42 +122,14 @@ export default function Chat() {
           type: "ai",
           solution,
           legal_info,
-          action,
-          category,
-          severity,
           lawyers,
+          email_needed,
         },
       ]);
-
-      // Helper: detect lawyer recommendation in text
-      const mentionsLawyer = (txt) => {
-        if (!txt) return false;
-        const patterns = [
-          /consult (an? )?lawyer/i,
-          /seek (legal )?counsel/i,
-          /contact (an? )?attorney/i,
-          /advis(e|ory) (from|with) (an? )?lawyer/i,
-          /legal (advice|assistance|help)/i,
-          /professional legal guidance/i,
-        ];
-        return patterns.some((re) => re.test(txt));
-      };
-
-      // If lawyers are present, show the prompt after Groq response
-      if (lawyers && lawyers.length > 0) {
-        setShowLawyerPrompt(true);
-        setLawyerChoices(lawyers);
-        setSelectedLawyer(null);
-      } else if (mentionsLawyer(solution) || mentionsLawyer(action)) {
-        // If solution or action text suggests a lawyer, show generic prompt
-        setShowLawyerPrompt(true);
-        setLawyerChoices([]); // No specific lawyers, but show prompt
-        setSelectedLawyer(null);
-      } else {
-        setShowLawyerPrompt(false);
-        setLawyerChoices([]);
-        setSelectedLawyer(null);
-      }
+      setEmailNeeded(!!email_needed);
+      setShowLawyerPrompt(lawyers && lawyers.length > 0);
+      setLawyerChoices(lawyers || []);
+      setSelectedLawyer(null);
     } catch (err) {
       if (err.name === "CanceledError" || err.name === "AbortError") {
         setMessages((prev) => [...prev, { type: "ai", text: "Analysis stopped by user." }]);
@@ -255,9 +235,8 @@ export default function Chat() {
                 <div className="chat-message__avatar">
                   {msg.type === "user" ? "You" : "AI"}
                 </div>
-
                 <div className="chat-message__bubble">
-                  {/* AI message with rich Groq response */}
+                  {/* AI message with rich Groq response and action buttons */}
                   {msg.type === "ai" && (msg.solution || msg.legal_info) ? (
                     <>
                       {msg.solution && (
@@ -272,62 +251,68 @@ export default function Chat() {
                           <RichResponse text={msg.legal_info} />
                         </div>
                       )}
-                      {(msg.category || msg.severity || msg.action) && (
-                        <div className="chat-message__meta-row">
-                          {msg.category && (
-                            <span className="chat-chip">{msg.category}</span>
+                      {/* Action Buttons: Generate Email & Find Lawyer */}
+                      {index === messages.length - 1 && (
+                        <div className="flex flex-row gap-3 mt-2">
+                          {msg.email_needed && (
+                            <button
+                              className="px-4 py-2 rounded bg-[#E4574E] text-white font-semibold shadow hover:bg-[#c13d36] transition"
+                              disabled={emailLoading}
+                              onClick={async () => {
+                                setEmailLoading(true);
+                                try {
+                                  const res = await API.post(
+                                    "https://law-project-aicw-ai-service.onrender.com/generate-email",
+                                    { text: messages.find(m => m.type === "user" && m.text)?.text || input }
+                                  );
+                                  setEmailContent(res.data.email);
+                                  setMessages(prev => ([
+                                    ...prev,
+                                    { type: "ai", solution: null, legal_info: null, text: null, email: res.data.email, isEmail: true }
+                                  ]));
+                                } catch (e) {
+                                  setMessages(prev => ([...prev, { type: "ai", text: "Failed to generate email." }]));
+                                } finally {
+                                  setEmailLoading(false);
+                                }
+                              }}
+                            >
+                              {emailLoading ? "Generating Email..." : "Generate Email"}
+                            </button>
                           )}
-                          {msg.severity && (
-                            <span className={`chat-chip chat-chip--${msg.severity.toLowerCase()}`}>
-                              {msg.severity}
-                            </span>
-                          )}
-                          {msg.action && (
-                            <span className="chat-chip chat-chip--action">{msg.action}</span>
-                          )}
-                        </div>
-                      )}
-                      {/* Lawyer recommendation prompt and choices */}
-                      {index === messages.length - 1 && showLawyerPrompt && lawyerChoices.length > 0 && !selectedLawyer && (
-                        <div className="chat-lawyer-recommend" style={{ marginTop: 24, textAlign: 'center' }}>
-                          <p style={{ fontWeight: 600, fontSize: 18, marginBottom: 16 }}>Would you like a lawyer recommendation?</p>
-                          <div style={{ display: 'flex', justifyContent: 'center', gap: 16 }}>
-                            <button className="chat-lawyer-btn" style={{ padding: '10px 24px', borderRadius: 8, border: '1px solid #ccc', background: '#fff', color: '#E4574E', fontWeight: 600, cursor: 'pointer' }} onClick={() => setShowLawyerPrompt(false)}>No Thanks</button>
-                            <button className="chat-lawyer-btn chat-lawyer-btn--primary" style={{ padding: '10px 24px', borderRadius: 8, border: 'none', background: '#E4574E', color: '#fff', fontWeight: 600, cursor: 'pointer', boxShadow: '0 2px 8px #e4574e22' }} onClick={() => setShowLawyerPrompt('choose')}>Want a Lawyer Recommendation?</button>
-                          </div>
+                          <button
+                            className="px-4 py-2 rounded border border-[#E4574E] text-[#E4574E] font-semibold bg-white shadow hover:bg-[#fbeaea] transition"
+                            onClick={() => {
+                              setShowLawyerPrompt('choose');
+                            }}
+                          >
+                            Find Lawyer
+                          </button>
                         </div>
                       )}
                       {/* Show lawyer choices if user wants recommendation */}
                       {index === messages.length - 1 && showLawyerPrompt === 'choose' && lawyerChoices.length > 0 && !selectedLawyer && (
-                        <div className="chat-lawyer-choices" style={{ marginTop: 24 }}>
-                          <p style={{ fontWeight: 600, fontSize: 17, marginBottom: 16 }}>Select a lawyer:</p>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div className="chat-lawyer-choices mt-6">
+                          <p className="font-semibold text-lg mb-4">Select a lawyer:</p>
+                          <div className="flex flex-col gap-4">
                             {lawyerChoices.map((lawyer, i) => (
-                              <button
+                              <div
                                 key={i}
-                                className="chat-lawyer-choice"
-                                style={{
-                                  display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-                                  padding: 18, borderRadius: 12, border: '1.5px solid #E4574E', background: '#fff', cursor: 'pointer',
-                                  boxShadow: '0 2px 8px #e4574e11', transition: 'box-shadow 0.2s',
-                                  fontSize: 16, fontWeight: 500, color: '#222',
-                                }}
+                                className="rounded-lg border-2 border-[#E4574E] bg-white p-4 shadow hover:shadow-lg transition cursor-pointer"
                                 onClick={() => setSelectedLawyer(lawyer)}
-                                onMouseOver={e => e.currentTarget.style.boxShadow = '0 4px 16px #e4574e33'}
-                                onMouseOut={e => e.currentTarget.style.boxShadow = '0 2px 8px #e4574e11'}
                               >
-                                <span style={{ fontSize: 18, fontWeight: 700, color: '#E4574E' }}>{lawyer.name}</span>
-                                <span style={{ fontSize: 14, color: '#555', margin: '2px 0 4px 0' }}>{lawyer.specialization} • {lawyer.qualification}</span>
-                                <span style={{ fontSize: 14, color: '#888' }}>⭐ {lawyer.rating} &nbsp; | &nbsp; {lawyer.experience} yrs exp &nbsp; | &nbsp; ₹{lawyer.fees} fees</span>
-                              </button>
+                                <span className="text-[#E4574E] font-bold text-lg">{lawyer.name}</span>
+                                <div className="text-sm text-gray-600">{lawyer.specialization} • {lawyer.qualification}</div>
+                                <div className="text-xs text-gray-400 mt-1">⭐ {lawyer.rating} | {lawyer.experience} yrs exp | ₹{lawyer.fees} fees</div>
+                              </div>
                             ))}
                           </div>
                         </div>
                       )}
                       {/* Show selected lawyer details */}
                       {index === messages.length - 1 && selectedLawyer && (
-                        <div className="chat-lawyer-details" style={{ marginTop: 28, border: '1.5px solid #E4574E', borderRadius: 14, background: '#fff', padding: 24, maxWidth: 400, marginLeft: 'auto', marginRight: 'auto', boxShadow: '0 2px 12px #e4574e11' }}>
-                          <h4 style={{ color: '#E4574E', fontWeight: 800, fontSize: 22, marginBottom: 12 }}>Lawyer Details</h4>
+                        <div className="chat-lawyer-details mt-7 border-2 border-[#E4574E] rounded-xl bg-white p-6 max-w-md mx-auto shadow-lg">
+                          <h4 className="text-[#E4574E] font-extrabold text-xl mb-3">Lawyer Details</h4>
                           <p><b>Name:</b> {selectedLawyer.name}</p>
                           <p><b>Specialization:</b> {selectedLawyer.specialization}</p>
                           <p><b>Location:</b> {selectedLawyer.location}</p>
@@ -337,10 +322,15 @@ export default function Chat() {
                           <p><b>Cases handled:</b> {selectedLawyer.cases}</p>
                           <p><b>Qualification:</b> {selectedLawyer.qualification}</p>
                           <p><b>Contact:</b> {selectedLawyer.contact}</p>
-                          <button className="chat-lawyer-btn" style={{ marginTop: 16, padding: '8px 20px', borderRadius: 8, border: '1px solid #ccc', background: '#fff', color: '#E4574E', fontWeight: 600, cursor: 'pointer' }} onClick={() => setSelectedLawyer(null)}>Back to list</button>
+                          <button className="chat-lawyer-btn mt-4 px-4 py-2 rounded border border-[#E4574E] bg-white text-[#E4574E] font-semibold" onClick={() => setSelectedLawyer(null)}>Back to list</button>
                         </div>
                       )}
                     </>
+                  ) : msg.isEmail && msg.email ? (
+                    <div className="chat-section">
+                      <h4 className="chat-section__title">Generated Email</h4>
+                      <pre className="whitespace-pre-wrap text-sm bg-gray-50 rounded p-3 border border-gray-200" style={{ fontFamily: 'inherit', lineHeight: 1.6 }}>{msg.email}</pre>
+                    </div>
                   ) : (
                     <p className="chat-message__text">{msg.text}</p>
                   )}
