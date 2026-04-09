@@ -140,11 +140,11 @@ export default function Chat() {
           import.meta.env.VITE_REACT_APP_BACKEND_URL + "/api/save-interaction",
           {
             userId,
-            question,
-            solution,
-            legal_info,
-            lawyers,
-            email_needed,
+            query: question,
+            // solution,
+            // legal_info,
+            // lawyers,
+            // email_needed,
           }
         );
         if (saveRes.data && saveRes.data.interactionId) {
