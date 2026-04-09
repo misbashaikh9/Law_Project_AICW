@@ -211,6 +211,17 @@ IMPORTANT:
 - Never merge sections
 - Always keep formatting consistent
 - Avoid legal jargon unless necessary
+
+If the solution involves sending a complaint, legal notice, or formal communication,
+then at the END write exactly:
+
+EMAIL_NEEDED: YES
+
+Otherwise write:
+
+EMAIL_NEEDED: NO
+
+Do not forget this line.
 """.strip()
 
 # ── Decision Engine ─────────────────────────────────────────────
@@ -309,65 +320,86 @@ def warmup():
 async def predict(data: InputText):
     """
     Main prediction endpoint.
-    - Predicts the legal category and severity of the user's query
-    - Returns actionable advice, legal info (from Groq LLM), and lawyer recommendations if needed
+    - Predicts category & severity
+    - Generates AI legal guidance
+    - Suggests lawyers if needed
+    - Detects if email generation is required
     """
     try:
         logger.info(f"/predict request: {data.text[:100]}{'...' if len(data.text) > 100 else ''}")
-        # Validate input length (redundant with Pydantic, but explicit error message)
+
+        # --- Input validation ---
         if not data.text or len(data.text.strip()) < 10:
             logger.warning("Input text too short")
             return {"error": "Input text is too short. Please provide at least 10 characters."}
+
         if len(data.text) > 2000:
             logger.warning("Input text too long")
             return {"error": "Input text is too long. Maximum allowed is 2000 characters."}
 
-        # Step 1 — ML prediction
-        category, severity,_,_ = predict_text(data.text)
+        # --- Step 1: ML prediction ---
+        category, severity, _, _ = predict_text(data.text)
         logger.info(f"Predicted category: {category}, severity: {severity}")
 
-        # NEW — Decision logic
+        # --- Step 2: Decision logic ---
         action = decide_action(severity)
         logger.info(f"Action decided: {action}")
 
-        # NEW — Your AI solution (main feature)
+        # --- Step 3: Base solution (your logic) ---
         solution = generate_solution(data.text, category, severity)
 
-        # Step 2 — Groq ONLY when needed (optimized)
+        # --- Step 4: Groq (only for moderate/serious) ---
+        email_needed=False
         prompt = build_prompt(data.text, category, severity)
 
         if severity.strip().lower() in ["serious", "moderate"]:
-            legal_info = await call_groq(prompt)
+            full_response = await call_groq(prompt)
             logger.info("Groq legal info generated.")
+
+            # --- EMAIL DETECTION ---
+            email_needed = "EMAIL_NEEDED: YES" in full_response
+
+            # --- Clean response ---
+            legal_info = (
+                full_response
+                .replace("EMAIL_NEEDED: YES", "")
+                .replace("EMAIL_NEEDED: NO", "")
+                .strip()
+            )
+
         else:
-            # 🧠 MINOR → CSV LOGIC ONLY (NO GROQ)
+            # --- Minor → no Groq ---
             solution = get_minor_solution(data.text)
+            legal_info = ""
+            email_needed = False
 
-            legal_info = ""   # same
-            
-
-        # Step 3 — Recommend lawyers ONLY if serious
+        # --- Step 5: Lawyer recommendation ---
         lawyer_recommendations = []
         if action == "lawyer":
             lawyer_recommendations = recommend_lawyers(category, severity)
             logger.info(f"Recommended lawyers: {len(lawyer_recommendations)}")
 
         logger.info("/predict completed successfully.")
+
+        # --- FINAL RESPONSE ---
         return {
             "category": category,
             "severity": severity,
-            "action": action,             
-            "solution": solution,       
-            "legal_info": legal_info,      
-            "lawyers": lawyer_recommendations
+            "action": action,
+            "solution": solution,
+            "legal_info": legal_info,
+            "lawyers": lawyer_recommendations,
+            "email_needed": email_needed   # 🔥 NEW FEATURE
         }
 
     except ValidationError as ve:
         logger.error(f"Validation error: {ve}")
         return {"error": ve.errors()}
+
     except RuntimeError as e:
         logger.error(f"Runtime error: {e}")
         return {"error": str(e)}
+
     except Exception as e:
         logger.error(f"Unhandled error: {e}")
         return {"error": str(e)}
