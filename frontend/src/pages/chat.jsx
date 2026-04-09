@@ -148,8 +148,8 @@ export default function Chat() {
             // email_needed,
           }
         );
-        if (saveRes.data && saveRes.data.interactionId) {
-          setInteractionId(saveRes.data.interactionId);
+        if (saveRes.data && (saveRes.data._id || saveRes.data.interactionId)) {
+          setInteractionId(saveRes.data._id || saveRes.data.interactionId);
         } else {
           setInteractionId(null);
         }
