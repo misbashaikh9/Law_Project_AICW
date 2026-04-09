@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import FeedbackSection from "../components/FeedbackSection";
 import { Link } from "react-router-dom";
 import API from "../services/api";
 import "./Chat.css";
@@ -373,7 +374,8 @@ export default function Chat() {
                         You can now send this email to resolve your issue.<br />
                         If you don’t receive a response, you may consider legal action or consulting a lawyer.
                       </div>
-                      <FeedbackSection />
+                      {/* FeedbackSection: pass interactionId and backendUrl as props */}
+                      <FeedbackSection interactionId={interactionId} backendUrl={process.env.REACT_APP_BACKEND_URL || "http://localhost:5000"} />
                     </div>
                   ) : (
                     <p className="chat-message__text">{msg.text}</p>
