@@ -1,4 +1,6 @@
 const About = () => {
+  const aboutImage ="https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=600&auto=format&fit=crop&q=80";
+
   return (
     <section id="about" className="py-28 bg-[#F5F5F5] relative">
       <div className="max-w-7xl mx-auto px-8 lg:px-12">
@@ -55,7 +57,7 @@ const About = () => {
           <div className="relative pb-8 pr-4">
             <div className="overflow-hidden rounded-lg">
               <img
-                src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=700&auto=format&fit=crop&q=80"
+                src={aboutImage}
                 alt="Legal professionals in consultation"
                 className="w-full h-[540px] object-cover grayscale-[20%]"
               />

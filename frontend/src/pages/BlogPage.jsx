@@ -40,8 +40,7 @@ export const blogPosts = [
     date: "Mar 18, 2026",
     readTime: "5 min read",
     image:
-      "https://images.unsplash.com/photo-1563986768609-322da13575f2?w=600&auto=format&fit=crop&q=80",
-  },
+""  },
   {
     id: 4,
     category: "Family Law",
@@ -134,17 +133,19 @@ const BlogPage = () => {
               Legal <span className="text-[#E4574E]">Insights</span> &amp;
               <br className="hidden sm:block" /> Expert Analysis
             </h1>
-            <p className="text-white/50 text-base md:text-lg max-w-2xl mx-auto leading-relaxed">
-              Stay informed with the latest legal trends, expert opinions, and in-depth
-              analysis from our team of experienced legal professionals.
-            </p>
+            <div className="flex justify-center">
+  <p className="text-white/50 text-base md:text-lg max-w-2xl leading-relaxed text-center">
+    Stay informed with the latest legal trends, expert opinions, and in-depth
+    analysis from our team of experienced legal professionals.
+  </p>
+</div>
           </div>
         </div>
       </section>
 
       {/* Featured Post */}
       {featuredPost && (
-        <section className="max-w-7xl mx-auto px-8 lg:px-12 -mt-12 relative z-20 mb-16">
+        <section className="max-w-7xl mx-auto px-8 lg:px-12  relative z-20 mb-16">
           <div className="group bg-white rounded-2xl border border-gray-100 shadow-xl overflow-hidden grid lg:grid-cols-2 gap-0 hover:shadow-2xl transition-all duration-500">
             <div className="relative overflow-hidden">
               <img

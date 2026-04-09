@@ -3,6 +3,9 @@ import axios from "axios";
 const API = axios.create({
   baseURL: "https://law-project-aicw-backendcd.onrender.com",
 });
+// const API = axios.create({
+//   baseURL:"http://localhost:5001",
+// });
 
 API.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
