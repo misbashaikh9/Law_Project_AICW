@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 const axios = require("axios");
 
-const AI_SERVICE_URL = "https://lawbridge-ai-ai-service.onrender.com/predict";
-const AI_SERVICE_HEALTH_URL = "https://lawbridge-ai-ai-service.onrender.com/";
+const AI_SERVICE_URL = "https://law-project-aicw-ai-service.onrender.com";
+const AI_SERVICE_HEALTH_URL = "https://law-project-aicw-ai-service.onrender.com";
 const RETRYABLE_STATUS_CODES = new Set([408, 425, 429, 500, 502, 503, 504]);
 const AI_HEALTH_TIMEOUT_MS = 10000;
 const AI_REQUEST_TIMEOUT_MS = 20000;
