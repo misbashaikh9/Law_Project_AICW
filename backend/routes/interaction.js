@@ -6,6 +6,7 @@ const Interaction = require("../models/Interaction");
 router.post("/save-interaction", async (req, res) => {
   try {
     const { userId, query, category, severity } = req.body;
+    if (!userId) return res.status(400).json({ error: "userId required" });
     const interaction = new Interaction({ userId, query, category, severity });
     await interaction.save();
     res.status(201).json(interaction);
