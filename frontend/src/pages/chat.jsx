@@ -342,6 +342,10 @@ export default function Chat() {
                     <div className="chat-section">
                       <h4 className="chat-section__title">Generated Email</h4>
                       <pre className="whitespace-pre-wrap text-sm bg-gray-50 rounded p-3 border border-gray-200" style={{ fontFamily: 'inherit', lineHeight: 1.6 }}>{msg.email}</pre>
+                      <div className="mt-2 text-xs text-gray-600">
+                        You can now send this email to resolve your issue.<br />
+                        If you don’t receive a response, you may consider legal action or consulting a lawyer.
+                      </div>
                     </div>
                   ) : (
                     <p className="chat-message__text">{msg.text}</p>
