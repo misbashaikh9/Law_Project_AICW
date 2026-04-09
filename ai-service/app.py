@@ -479,3 +479,32 @@ Keep all proofs (screenshots, order ID, messages).
 
 
 """
+@app.post("/generate-email")
+async def generate_email_api(data: InputText):
+    try:
+        prompt = f"""
+You are a professional Indian legal assistant.
+
+Write a formal legal email based on this issue:
+
+"{data.text}"
+
+Requirements:
+- Clear subject line
+- Proper greeting
+- Structured body
+- Legal tone
+- Polite but firm language
+- Closing with name placeholder
+
+Return only the email.
+"""
+
+        email = await call_groq(prompt)
+
+        return {
+            "email": email
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
