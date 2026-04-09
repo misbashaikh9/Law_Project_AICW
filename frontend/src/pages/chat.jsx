@@ -346,6 +346,7 @@ export default function Chat() {
                         You can now send this email to resolve your issue.<br />
                         If you don’t receive a response, you may consider legal action or consulting a lawyer.
                       </div>
+                      <FeedbackSection />
                     </div>
                   ) : (
                     <p className="chat-message__text">{msg.text}</p>
