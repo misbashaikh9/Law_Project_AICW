@@ -369,9 +369,21 @@ async def predict(data: InputText):
 
         else:
             # --- Minor → no Groq ---
-            solution = get_minor_solution(data.text)
-            legal_info = ""
-            email_needed = False
+            # --- Ask Groq ONLY for email detection (light prompt) ---
+            email_prompt = f"""
+            User problem: {data.text}
+
+            Does this situation require sending a formal complaint or legal email?
+
+            Answer ONLY:
+            EMAIL_NEEDED: YES
+            or
+            EMAIL_NEEDED: NO
+            """
+
+            email_check = await call_groq(email_prompt)
+
+            email_needed = "YES" in email_check.upper()
 
         # --- Step 5: Lawyer recommendation ---
         lawyer_recommendations = []
