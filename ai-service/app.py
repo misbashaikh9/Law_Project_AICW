@@ -349,8 +349,11 @@ async def predict(data: InputText):
         solution = generate_solution(data.text, category, severity)
 
         # --- Step 4: Groq (only for moderate/serious) ---
-        email_needed=False
+    
         prompt = build_prompt(data.text, category, severity)
+        
+        email_needed=False
+        legal_info=""
 
         if severity.strip().lower() in ["serious", "moderate"]:
             full_response = await call_groq(prompt)
