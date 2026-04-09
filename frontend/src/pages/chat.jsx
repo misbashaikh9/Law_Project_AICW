@@ -137,7 +137,7 @@ export default function Chat() {
       try {
         const userId = localStorage.getItem("userId");
         const saveRes = await API.post(
-          process.env.REACT_APP_BACKEND_URL + "/api/save-interaction",
+          import.meta.env.VITE_REACT_APP_BACKEND_URL + "/api/save-interaction",
           {
             userId,
             question,
@@ -372,7 +372,7 @@ export default function Chat() {
                               {/* FeedbackSection: only show if interactionId exists */}
                               {interactionId && (
                                 <div className="mt-4">
-                                  <FeedbackSection interactionId={interactionId} backendUrl={process.env.REACT_APP_BACKEND_URL} />
+                                  <FeedbackSection interactionId={interactionId} backendUrl={import.meta.env.VITE_REACT_APP_BACKEND_URL} />
                                 </div>
                               )}
                             </div>
@@ -405,7 +405,7 @@ export default function Chat() {
                         If you don’t receive a response, you may consider legal action or consulting a lawyer.
                       </div>
                       {/* FeedbackSection: pass interactionId and backendUrl as props */}
-                      <FeedbackSection interactionId={interactionId} backendUrl={process.env.REACT_APP_BACKEND_URL} />
+                      <FeedbackSection interactionId={interactionId} backendUrl={import.meta.env.VITE_REACT_APP_BACKEND_URL} />
                     </div>
                   ) : (
                     <p className="chat-message__text">{msg.text}</p>
