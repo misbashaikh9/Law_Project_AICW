@@ -90,7 +90,7 @@ try:
         names=[
             "name", "specialization", "location",
             "experience", "rating", "fees",
-            "cases", "qualification", "contact"
+            "cases", "lost_cases", "qualification", "contact"
         ]
     )
 except pd.errors.ParserError:
@@ -101,12 +101,12 @@ except pd.errors.ParserError:
         names=[
             "name", "specialization", "location",
             "experience", "rating", "fees",
-            "cases", "qualification", "contact"
+            "cases", "lost_cases", "qualification", "contact"
         ]
     )
 
 # Clean numeric fields (robust to bad data)
-for col in ["experience", "rating", "cases"]:
+for col in ["experience", "rating", "cases", "lost_cases"]:
     lawyer_df[col] = pd.to_numeric(lawyer_df[col], errors="coerce").fillna(0).astype(int)
 
 # Convert to list of dicts
