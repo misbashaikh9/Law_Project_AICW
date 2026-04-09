@@ -345,6 +345,12 @@ export default function Chat() {
                               <div className="text-xs text-gray-600">
                                 You can now contact this lawyer for professional assistance.
                               </div>
+                              {/* FeedbackSection: only show if interactionId exists */}
+                              {interactionId && (
+                                <div className="mt-4">
+                                  <FeedbackSection interactionId={interactionId} backendUrl={process.env.REACT_APP_BACKEND_URL || "http://localhost:5000"} />
+                                </div>
+                              )}
                             </div>
                           )}
                         </div>
