@@ -30,7 +30,7 @@ const Home = () => {
       <WhyChooseUs />
 
       {/* Contact Section */}
-      <section id="contact" className="py-28 bg-[#f8f8f8] relative">
+      {/* <section id="contact" className="py-28 bg-[#f8f8f8] relative">
         <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-[#E4574E] to-transparent" />
         <div className="max-w-3xl mx-auto px-8 lg:px-12">
           <div className="text-center mb-14">
@@ -78,7 +78,7 @@ const Home = () => {
             </button>
           </form>
         </div>
-      </section>
+      </section> */}
 
       <LawFooter />
 
