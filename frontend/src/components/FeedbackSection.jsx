@@ -7,6 +7,8 @@ export default function FeedbackSection({ interactionId, backendUrl }) {
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
+  // Debug log after all hooks
+  console.log("[FeedbackSection] interactionId:", interactionId, "rating:", rating, "submitting:", submitting, "success:", success);
 
   const handleStarClick = (star) => {
     setRating(star);
@@ -88,43 +90,5 @@ export default function FeedbackSection({ interactionId, backendUrl }) {
       )}
     </>
   );
-
-  return (
-    <form className="mt-4 flex flex-col items-center" onSubmit={handleSubmit}>
-      <div className="text-sm text-gray-700 mb-2">Rate this solution</div>
-      <div className="flex flex-row gap-1 mb-2">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <button
-            type="button"
-            key={star}
-            className={`text-2xl transition focus:outline-none ${
-              rating >= star ? "text-yellow-400" : "text-gray-300"
-            } hover:text-yellow-500`}
-            onClick={() => handleStarClick(star)}
-            aria-label={`Rate ${star} star${star > 1 ? "s" : ""}`}
-            disabled={submitting}
-          >
-            ★
-          </button>
-        ))}
-      </div>
-      {rating > 0 && rating <= 3 && (
-        <textarea
-          className="w-full max-w-xs p-2 border border-gray-300 rounded mb-2 text-sm"
-          rows={3}
-          placeholder="Please let us know how we can improve..."
-          value={feedback}
-          onChange={(e) => setFeedback(e.target.value)}
-          disabled={submitting}
-        />
-      )}
-      <button
-        type="submit"
-        className={`mt-2 px-4 py-1.5 rounded bg-blue-600 text-white font-medium shadow hover:bg-blue-700 transition disabled:opacity-50`}
-        disabled={!rating || submitting || !interactionId}
-      >
-        {submitting ? "Submitting..." : "Submit Feedback"}
-      </button>
-    </form>
-  );
+  
 }
