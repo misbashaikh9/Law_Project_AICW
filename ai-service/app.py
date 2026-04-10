@@ -346,7 +346,10 @@ async def predict(data: InputText):
         logger.info(f"Action decided: {action}")
 
         # --- Step 3: Base solution (your logic) ---
-        solution = generate_solution(data.text, category, severity)
+        if severity.strip().lower() == "minor":
+            solution = get_minor_solution(data.text)
+        else:
+            solution = generate_solution(data.text, category, severity)
 
         # --- Step 4: Groq (only for moderate/serious) ---
     

@@ -4,7 +4,21 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
+
 import joblib
+from sklearn.metrics import classification_report, confusion_matrix
+import numpy as np
+def print_confusion_matrix(y_true, y_pred, labels, title):
+    cm = confusion_matrix(y_true, y_pred, labels=labels)
+    print(f"\n{title} Confusion Matrix:")
+    print("Labels:", labels)
+    print(cm)
+
+# Call the function after predictions and reports
+# (This ensures the function is actually executed)
+
+
+# Move confusion matrix code after predictions are made
 
 # ─────────────────────────────────────────────
 # Load dataset
@@ -63,11 +77,28 @@ severity_model.fit(X_train_vec, y_sev_train)
 # ─────────────────────────────────────────────
 # Evaluate (for YOU, not UI)
 # ─────────────────────────────────────────────
-cat_acc = accuracy_score(y_cat_test, category_model.predict(X_test_vec))
-sev_acc = accuracy_score(y_sev_test, severity_model.predict(X_test_vec))
+
+cat_preds = category_model.predict(X_test_vec)
+sev_preds = severity_model.predict(X_test_vec)
+
+cat_acc = accuracy_score(y_cat_test, cat_preds)
+sev_acc = accuracy_score(y_sev_test, sev_preds)
 
 print(f"Category Accuracy: {cat_acc:.2f}")
 print(f"Severity Accuracy: {sev_acc:.2f}")
+
+
+print("\nCategory Classification Report:")
+print(classification_report(y_cat_test, cat_preds))
+
+print("Severity Classification Report:")
+print(classification_report(y_sev_test, sev_preds))
+
+# Print confusion matrices for both category and severity
+cat_labels = np.unique(y_cat_test)
+sev_labels = np.unique(y_sev_test)
+print_confusion_matrix(y_cat_test, cat_preds, cat_labels, "Category")
+print_confusion_matrix(y_sev_test, sev_preds, sev_labels, "Severity")
 
 # ─────────────────────────────────────────────
 # Save Models (clean way)
