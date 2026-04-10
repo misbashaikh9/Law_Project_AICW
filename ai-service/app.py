@@ -475,8 +475,6 @@ IF THE MATTER IS SERIOUS
     
     # ✅ Better fallback (slightly improved)
     return """
-    # -this category is not covered in the minor cases data---
-    # -please add this category to the minor_cases.csv file--
     CASE UNDERSTANDING
 This appears to be related to:
 ● a minor consumer / general issue
